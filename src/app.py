@@ -5,7 +5,7 @@ import threading
 from pathlib import Path
 from tkinter import BOTH, END, LEFT, RIGHT, X, Y, Button, Entry, Frame, Label, Scrollbar, StringVar, Text, Tk, filedialog, messagebox, ttk
 
-from core import DEFAULT_OUTPUT_NAME, PlaylistVideo, build_transcript_document, extract_playlist_videos, parse_languages, save_transcript_file, transcripts_folder
+from core import DEFAULT_OUTPUT_NAME, PlaylistVideo, build_output_filename, build_transcript_document, extract_playlist_title, extract_playlist_videos, parse_languages, sanitize_filename, save_transcript_file, transcripts_folder
 
 
 APP_TITLE = "Transcripción de playlist de YouTube"
@@ -131,7 +131,7 @@ class TranscriptApp:
     def _default_output_path(self) -> Path:
         output_folder = transcripts_folder()
         output_folder.mkdir(parents=True, exist_ok=True)
-        return output_folder / DEFAULT_OUTPUT_NAME
+        return output_folder / build_output_filename()
 
     def choose_output_path(self) -> None:
         default_folder = transcripts_folder()
@@ -189,6 +189,13 @@ class TranscriptApp:
     def _export_worker(self, playlist_url: str, output_path: str, preferred_languages: list[str]) -> None:
         try:
             self.status_queue.put(("log", "Leyendo videos de la playlist..."))
+
+            # Get playlist title for the filename
+            self.status_queue.put(("status", "Obteniendo nombre de la playlist..."))
+            playlist_title = extract_playlist_title(playlist_url)
+            if playlist_title:
+                self.status_queue.put(("log", f"Playlist: {playlist_title}"))
+
             videos = extract_playlist_videos(playlist_url)
             if not videos:
                 raise RuntimeError("No se encontraron videos en la playlist.")
@@ -201,15 +208,22 @@ class TranscriptApp:
                 video_title = video.title
                 self.status_queue.put(("progress", f"{current}|{total}|{video_title or ''}"))
 
-            content = build_transcript_document(playlist_url, videos, preferred_languages, progress_callback=progress_callback)
-            output_path_obj = transcripts_folder() / Path(output_path).name
+            content = build_transcript_document(playlist_url, videos, preferred_languages, playlist_title=playlist_title, progress_callback=progress_callback)
+
+            # Use playlist title as filename, falling back to what user set
+            if playlist_title:
+                final_filename = build_output_filename(playlist_title)
+            else:
+                final_filename = Path(output_path).name
+
+            output_path_obj = transcripts_folder() / final_filename
             output_path_obj.parent.mkdir(parents=True, exist_ok=True)
             save_transcript_file(output_path_obj, content)
 
             self.status_queue.put(("log", f"Archivo creado: {output_path_obj}"))
             self.status_queue.put(("status", "Proceso terminado."))
             self.status_queue.put(("progress", f"{len(videos)}|{len(videos)}|Completado"))
-            self.status_queue.put(("done", "Las transcripciones se guardaron correctamente."))
+            self.status_queue.put(("done", f"Las transcripciones se guardaron correctamente en:\n{output_path_obj}"))
         except Exception as exc:  # noqa: BLE001
             self.status_queue.put(("error", str(exc)))
 
@@ -232,6 +246,9 @@ class TranscriptApp:
                     self.is_running = False
                     self.export_button.configure(state="normal")
                     messagebox.showinfo("Completado", message)
+                    # Reset for next playlist
+                    self.playlist_url_var.set('')
+                    self.output_path_var.set(str(self._default_output_path()))
                 elif kind == "error":
                     self.log(f"Error: {message}")
                     self.set_status("Hubo un error.")

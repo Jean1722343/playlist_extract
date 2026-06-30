@@ -1,8 +1,12 @@
 services:
   transcripcion_playlist:
-    build: .
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     ports:
       - "8000:8000"
+    volumes:
+      - ../transcripciones:/app/transcripciones
     environment:
       - PORT=8000
     healthcheck:

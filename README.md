@@ -1,218 +1,154 @@
-# 🎬 playlist_extract
-
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
-  <img src="https://img.shields.io/badge/Tkinter-Desktop-4B8BBE?style=for-the-badge" alt="Tkinter" />
-  <img src="https://img.shields.io/badge/Flask-Web-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask" />
-  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
+  <h1 align="center">🎬 Transcriptor de Playlists de YouTube</h1>
+  <p align="center">
+    Extrae automáticamente las transcripciones de todos los videos de una playlist de YouTube<br/>
+    en un solo archivo de texto ordenado — con el nombre de la playlist como nombre del archivo.
+  </p>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/yt--dlp-Playlist%20reader-F59E0B?style=flat-square" alt="yt-dlp" />
-  <img src="https://img.shields.io/badge/youtube--transcript--api-Transcripts-EA4335?style=flat-square" alt="youtube-transcript-api" />
-  <img src="https://img.shields.io/badge/Windows-One--click%20launch-0078D6?style=flat-square" alt="Windows" />
-</p>
-
-<p align="center">
-  App para pegar una playlist de YouTube y exportar todas sus transcripciones en un único archivo de texto, respetando el orden original de la lista.
+  <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10+"/>
+  <img src="https://img.shields.io/badge/Licencia-MIT-green?style=for-the-badge" alt="License MIT"/>
+  <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows"/>
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
 </p>
 
 ---
 
-## Tabla de contenido
+## ✨ Características
 
-- [Vista rápida](#vista-rápida)
-- [Qué hace](#qué-hace)
-- [Cómo usarlo](#cómo-usarlo)
-- [Tecnologías](#tecnologías)
-- [Archivos del proyecto](#archivos-del-proyecto)
-- [Carpeta de salidas](#carpeta-de-salidas)
-- [Entorno `.venv`](#entorno-venv)
-
----
-
-## Vista rápida
-
-La forma más simple de usarlo es esta:
-
-1. Haz doble clic en [Iniciar_Transcriptor.bat](Iniciar_Transcriptor.bat).
-2. Pega la URL de la playlist.
-3. Elige dónde guardar el archivo.
-4. Pulsa **Extraer transcripciones**.
-
-La primera vez, el lanzador instala automáticamente las dependencias necesarias.
-
-Si prefieres no instalar Python en Windows:
-
-1. Haz doble clic en [Iniciar_Con_Docker.bat](Iniciar_Con_Docker.bat).
-2. El navegador se abrirá automáticamente cuando Docker esté listo.
-3. Si no se abre solo, entra en `http://localhost:8000`.
-4. Pega la playlist y genera el archivo desde el navegador.
-
-La versión web muestra el avance en vivo con barra de progreso, estado y enlace de descarga al terminar.
-
-Docker instala todo automáticamente dentro del contenedor.
+- 🎯 **Extracción masiva** — Transcribe todos los videos de una playlist completa
+- 📝 **Nombre automático** — Detecta el nombre de la playlist y lo usa como nombre del archivo
+- 🌍 **Multi-idioma** — Soporta transcripciones en español, inglés, y más (`es`, `en`, `es-419`)
+- ⚡ **Un clic** — Doble clic en el `.bat` y listo, instala todo automáticamente
+- 🔄 **Procesamiento continuo** — Al terminar una playlist, queda listo para procesar otra
+- 🖥️ **Dos interfaces** — Web (Flask) para navegador + Escritorio (Tkinter) para uso local
+- 🐳 **Docker ready** — Despliega con Docker sin instalar Python
 
 ---
 
-## Qué hace
+## 🚀 Inicio Rápido
 
-El programa automatiza este proceso:
+### Opción 1: Windows (sin Docker)
 
-1. Lee la URL de la playlist de YouTube.
-2. Obtiene la lista de videos incluidos.
-3. Recorre los videos en el mismo orden en que aparecen en la playlist.
-4. Busca la transcripción en los idiomas que indiques.
-5. Guarda el contenido en un archivo de texto ordenado, legible y fácil de revisar.
+> Requisito: [Python 3.10+](https://www.python.org/downloads/) instalado con "Add to PATH" marcado.
 
-Si un video no tiene transcripción, el archivo lo indicará y seguirá con el siguiente.
+1. Clona o descarga el repositorio
+2. **Doble clic** en `Iniciar_Transcriptor.bat`
+3. ¡Listo! Se abre tu navegador automáticamente
 
-Mientras se procesa la playlist, verás el porcentaje de avance video por video.
+El script crea el entorno virtual, instala las dependencias y lanza el servidor. Todo automático.
 
-En Docker también verás una barra de progreso en tiempo real mientras la tarea avanza.
+### Opción 2: Docker
 
----
+> Requisito: [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo.
 
-## Cómo usarlo
+1. **Doble clic** en `Iniciar_Con_Docker.bat`
+2. ¡Listo! Se abre tu navegador en `http://localhost:8000`
 
-### Opción más fácil: doble clic en Windows
-
-Usa [Iniciar_Transcriptor.bat](Iniciar_Transcriptor.bat).
-
-Pasos:
-
-1. Abre el archivo.
-2. Se abrirá la ventana del programa.
-3. Pega la URL de la playlist.
-4. Selecciona el archivo de salida.
-5. Pulsa **Extraer transcripciones**.
-
-### Opción sin instalar Python: Docker
-
-Usa [Iniciar_Con_Docker.bat](Iniciar_Con_Docker.bat).
-
-Pasos:
-
-1. Abre el archivo.
-2. Espera a que Docker termine de levantar el servicio.
-3. Abre `http://localhost:8000`.
-4. Pega la playlist.
-5. Genera y descarga el archivo.
+Si algo falla, el script te dice exactamente qué necesitas instalar.
 
 ### Instalación manual
 
-Si prefieres ejecutar desde terminal:
-
 ```bash
-python app.py
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/transcriptor-playlists.git
+cd transcriptor-playlists
+
+# Crear entorno virtual
+python -m venv .venv
+
+# Activar entorno virtual
+.venv\Scripts\activate          # Windows
+source .venv/bin/activate       # Linux / macOS
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Ejecutar la interfaz web
+python src/web_app.py
+
+# O ejecutar la interfaz de escritorio
+python src/app.py
 ```
 
-El lanzador de Windows y la imagen de Docker instalan las dependencias de forma automática, así que no necesitas un archivo `requirements.txt`.
-
 ---
 
-## Tecnologías
+## 📁 Estructura del Proyecto
 
-| Tecnología | Propósito |
-|---|---|
-| Python | Lenguaje principal |
-| Tkinter | Interfaz de escritorio |
-| Flask | Interfaz web para Docker |
-| yt-dlp | Leer la playlist y extraer videos |
-| youtube-transcript-api | Obtener las transcripciones |
-| Docker | Empaquetado y ejecución aislada |
-
----
-
-## Archivos del proyecto
-
-| Archivo | Descripción |
-|---|---|
-| `app.py` | Interfaz de escritorio |
-| `web_app.py` | Interfaz web para Docker |
-| `core.py` | Lógica compartida del proyecto |
-| `Dockerfile` | Imagen para ejecutar la app web |
-| `docker-compose.yml` | Arranque rápido con Docker |
-| `Iniciar_Transcriptor.bat` | Inicio con doble clic en Windows |
-| `Iniciar_Con_Docker.bat` | Inicio de la versión Docker |
-
----
-
-## Carpeta de salidas
-
-Todos los archivos de transcripción se guardan dentro de la carpeta `transcripciones/` del proyecto.
-
-La carpeta se crea sola la primera vez que generas un archivo.
-
-| Carpeta | Uso |
-|---|---|
-| `transcripciones/` | Guarda únicamente los archivos de transcripción generados |
-
----
-
-## Resultado generado
-
-El archivo de salida queda con una estructura como esta:
-
-```text
-1. Título del video
-URL: https://www.youtube.com/watch?v=...
-[00:12] Primera frase de la transcripción
-[00:18] Siguiente frase
+```
+📦 transcriptor-playlists/
+│
+├── 🚀 Iniciar_Transcriptor.bat    ← Lanzador Windows (sin Docker)
+├── 🐳 Iniciar_Con_Docker.bat      ← Lanzador Docker
+├── 📄 README.md
+├── 📄 LICENSE
+├── 📋 requirements.txt
+├── 📄 .gitignore
+│
+├── 📂 src/                        ← Código fuente
+│   ├── ⚙️ core.py                 │  Lógica principal (extracción, transcripción)
+│   ├── 🌐 web_app.py              │  Interfaz web (Flask)
+│   └── 🖥️ app.py                  │  Interfaz de escritorio (Tkinter)
+│
+├── 📂 docker/                     ← Configuración Docker
+│   ├── Dockerfile
+│   └── docker-compose.yml
+│
+├── 📂 tests/                      ← Tests
+│   └── test_filename.py
+│
+└── 📂 transcripciones/            ← Archivos de salida (.txt)
+    └── .gitkeep
 ```
 
-En la versión Docker, el nombre del archivo incluye fecha y hora para evitar sobreescrituras.
+---
+
+## 🛠️ ¿Cómo Funciona?
+
+```mermaid
+graph LR
+    A["🔗 URL de Playlist"] --> B["yt-dlp"]
+    B --> C["Nombre + Lista de Videos"]
+    C --> D["youtube-transcript-api"]
+    D --> E["📝 Transcripciones"]
+    E --> F["📂 nombre_playlist_2025-01-15.txt"]
+```
+
+1. **Entrada** — Pegas la URL de una playlist de YouTube
+2. **Detección** — `yt-dlp` obtiene el nombre de la playlist y la lista de videos
+3. **Transcripción** — `youtube-transcript-api` descarga los subtítulos de cada video
+4. **Guardado** — Se genera un `.txt` con el nombre de la playlist + fecha, en `transcripciones/`
+5. **Siguiente** — La interfaz queda lista para procesar otra playlist inmediatamente
 
 ---
 
-## Requisitos
+## 📋 Dependencias
 
-- Windows, macOS o Linux para la versión Python.
-- Docker instalado si quieres usar la versión web.
-- Conexión a internet.
-- Playlist pública o accesible desde YouTube.
-
----
-
-## Entorno `.venv`
-
-`.venv` es el entorno virtual de Python del proyecto.
-
-Sirve para:
-
-- aislar dependencias
-- evitar conflictos con otros proyectos
-- mantener solo las librerías necesarias para esta app
-
-Importante:
-
-- `.venv` no guarda transcripciones
-- `.venv` no guarda videos
-- el archivo final se guarda donde tú elijas desde la app
+| Paquete                   | Propósito                          |
+|---------------------------|-------------------------------------|
+| `flask`                   | Servidor web e interfaz             |
+| `yt-dlp`                  | Extracción de datos de YouTube      |
+| `youtube-transcript-api`  | Obtención de transcripciones        |
 
 ---
 
-## Dónde se guarda la información
+## 🤝 Contribuir
 
-- La transcripción final se guarda en la carpeta `transcripciones/`.
-- La carpeta `transcripciones/` queda en la raíz del proyecto, al lado de `app.py`.
-- La URL de la playlist solo se usa para consultar YouTube.
-- No se guarda una copia del video dentro de `.venv`.
-- En Docker, el archivo se crea dentro de `transcripciones/` y se descarga desde el navegador.
-
----
-
-
-## Limitaciones
-
-- Algunas playlists muy grandes pueden tardar un poco.
-- Si YouTube cambia su estructura, puede afectar la extracción.
-- Si un video no tiene transcripción, no se podrá obtener texto.
+1. Haz un **fork** del repositorio
+2. Crea una **branch** para tu feature (`git checkout -b feature/nueva-funcion`)
+3. Haz **commit** de tus cambios (`git commit -m 'Agrega nueva función'`)
+4. Haz **push** a la branch (`git push origin feature/nueva-funcion`)
+5. Abre un **Pull Request**
 
 ---
 
-## Recomendación final
+## 📄 Licencia
 
-Si quieres la experiencia más simple para cualquier persona, usa [Iniciar_Transcriptor.bat](Iniciar_Transcriptor.bat).
+Este proyecto está bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
 
-Si quieres evitar instalaciones en tu sistema, usa [Iniciar_Con_Docker.bat](Iniciar_Con_Docker.bat).
+---
+
+<p align="center">
+  Hecho con ❤️ para la comunidad hispanohablante
+</p>

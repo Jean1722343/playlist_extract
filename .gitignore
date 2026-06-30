@@ -1,0 +1,69 @@
+# ==============================
+# Python
+# ==============================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+*.manifest
+*.spec
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# ==============================
+# Environment variables
+# ==============================
+.env
+.env.*
+
+# ==============================
+# Transcriptions output
+# ==============================
+transcripciones/*.txt
+!transcripciones/.gitkeep
+
+# ==============================
+# IDE / Editors
+# ==============================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# ==============================
+# OS generated files
+# ==============================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ==============================
+# Docker runtime
+# ==============================
+docker-compose.override.yml
+.docker/
+
+# ==============================
+# Misc
+# ==============================
+*.log
+*.bak
+*.tmp
+*.cache
+.pytest_cache/
+.mypy_cache/
