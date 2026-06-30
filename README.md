@@ -28,7 +28,6 @@
 - [Archivos del proyecto](#archivos-del-proyecto)
 - [Carpeta de salidas](#carpeta-de-salidas)
 - [Entorno `.venv`](#entorno-venv)
-- [FAQ](#faq)
 
 ---
 
