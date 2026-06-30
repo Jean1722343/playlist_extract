@@ -1,0 +1,13 @@
+services:
+  transcripcion_playlist:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000').read()\""]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
