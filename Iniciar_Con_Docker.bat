@@ -5,7 +5,7 @@ cd /d "%~dp0"
 
 echo ============================================
 echo   Transcriptor de Playlists de YouTube
-echo   Modo: Docker
+echo   Modo: Docker (interfaz web)
 echo ============================================
 echo.
 
@@ -33,8 +33,13 @@ if errorlevel 1 (
     exit /b 1
 )
 
+:: ── Create output folder ──
+if not exist "transcripciones" mkdir transcripciones
+
 :: ── Build and start container ──
 echo [1/2] Construyendo e iniciando contenedor...
+echo       (esto puede tardar la primera vez)
+echo.
 docker compose -f docker\docker-compose.yml up -d --build --wait
 if errorlevel 1 (
     echo.
@@ -47,11 +52,12 @@ if errorlevel 1 (
 :: ── Open browser ──
 echo [2/2] Abriendo navegador...
 echo.
-echo   La interfaz esta disponible en: http://localhost:8000
+echo   Interfaz web en: http://localhost:8000
 echo.
 echo   Para detener: docker compose -f docker\docker-compose.yml down
 echo.
 
 start "" "http://localhost:8000"
 
+pause
 endlocal

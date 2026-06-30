@@ -8,7 +8,6 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.10+"/>
-  <img src="https://img.shields.io/badge/Licencia-MIT-green?style=for-the-badge" alt="License MIT"/>
   <img src="https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white" alt="Windows"/>
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
 </p>
@@ -19,58 +18,35 @@
 
 - 🎯 **Extracción masiva** — Transcribe todos los videos de una playlist completa
 - 📝 **Nombre automático** — Detecta el nombre de la playlist y lo usa como nombre del archivo
-- 🌍 **Multi-idioma** — Soporta transcripciones en español, inglés, y más (`es`, `en`, `es-419`)
-- ⚡ **Un clic** — Doble clic en el `.bat` y listo, instala todo automáticamente
-- 🔄 **Procesamiento continuo** — Al terminar una playlist, queda listo para procesar otra
-- 🖥️ **Dos interfaces** — Web (Flask) para navegador + Escritorio (Tkinter) para uso local
-- 🐳 **Docker ready** — Despliega con Docker sin instalar Python
+- 🌍 **Multi-idioma** — Soporta transcripciones en español, inglés, y más
+- ⚡ **Un clic** — Doble clic en un `.bat` y listo, instala todo automáticamente
+- 🔄 **Procesamiento continuo** — Al terminar una playlist, queda listo para otra
 
 ---
 
-## 🚀 Inicio Rápido
+## 🚀 Dos formas de usar
 
-### Opción 1: Windows (sin Docker)
+### 🖥️ Programa de escritorio (sin Docker)
 
-> Requisito: [Python 3.10+](https://www.python.org/downloads/) instalado con "Add to PATH" marcado.
+> Requisito: [Python 3.10+](https://www.python.org/downloads/) con "Add to PATH" marcado.
 
-1. Clona o descarga el repositorio
-2. **Doble clic** en `Iniciar_Transcriptor.bat`
-3. ¡Listo! Se abre tu navegador automáticamente
+**Doble clic en `Iniciar_Transcriptor.bat`**
 
-El script crea el entorno virtual, instala las dependencias y lanza el servidor. Todo automático.
+Se abre un programa de escritorio en Windows. Pegas la URL, le das clic y las transcripciones se guardan en la carpeta `transcripciones/`.
 
-### Opción 2: Docker
+El script instala todo automáticamente la primera vez.
+
+---
+
+### 🐳 Interfaz web (con Docker)
 
 > Requisito: [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo.
 
-1. **Doble clic** en `Iniciar_Con_Docker.bat`
-2. ¡Listo! Se abre tu navegador en `http://localhost:8000`
+**Doble clic en `Iniciar_Con_Docker.bat`**
 
-Si algo falla, el script te dice exactamente qué necesitas instalar.
+Se abre una interfaz web moderna en tu navegador (`http://localhost:8000`). Todo corre dentro de un contenedor Docker.
 
-### Instalación manual
-
-```bash
-# Clonar el repositorio
-git clone https://github.com/tu-usuario/transcriptor-playlists.git
-cd transcriptor-playlists
-
-# Crear entorno virtual
-python -m venv .venv
-
-# Activar entorno virtual
-.venv\Scripts\activate          # Windows
-source .venv/bin/activate       # Linux / macOS
-
-# Instalar dependencias
-pip install -r requirements.txt
-
-# Ejecutar la interfaz web
-python src/web_app.py
-
-# O ejecutar la interfaz de escritorio
-python src/app.py
-```
+Si Docker no está instalado o no está corriendo, el script te avisa qué hacer.
 
 ---
 
@@ -79,17 +55,15 @@ python src/app.py
 ```
 📦 transcriptor-playlists/
 │
-├── 🚀 Iniciar_Transcriptor.bat    ← Lanzador Windows (sin Docker)
-├── 🐳 Iniciar_Con_Docker.bat      ← Lanzador Docker
+├── 🚀 Iniciar_Transcriptor.bat    ← Programa de escritorio (sin Docker)
+├── 🐳 Iniciar_Con_Docker.bat      ← Interfaz web (con Docker)
 ├── 📄 README.md
-├── 📄 LICENSE
-├── 📋 requirements.txt
 ├── 📄 .gitignore
 │
 ├── 📂 src/                        ← Código fuente
-│   ├── ⚙️ core.py                 │  Lógica principal (extracción, transcripción)
-│   ├── 🌐 web_app.py              │  Interfaz web (Flask)
-│   └── 🖥️ app.py                  │  Interfaz de escritorio (Tkinter)
+│   ├── core.py                    │  Lógica principal
+│   ├── app.py                     │  Programa de escritorio (Tkinter)
+│   └── web_app.py                 │  Interfaz web (Flask)
 │
 ├── 📂 docker/                     ← Configuración Docker
 │   ├── Dockerfile
@@ -98,13 +72,13 @@ python src/app.py
 ├── 📂 tests/                      ← Tests
 │   └── test_filename.py
 │
-└── 📂 transcripciones/            ← Archivos de salida (.txt)
+└── 📂 transcripciones/            ← Aquí se guardan las transcripciones
     └── .gitkeep
 ```
 
 ---
 
-## 🛠️ ¿Cómo Funciona?
+## 🛠️ ¿Cómo funciona?
 
 ```mermaid
 graph LR
@@ -112,40 +86,24 @@ graph LR
     B --> C["Nombre + Lista de Videos"]
     C --> D["youtube-transcript-api"]
     D --> E["📝 Transcripciones"]
-    E --> F["📂 nombre_playlist_2025-01-15.txt"]
+    E --> F["📂 transcripciones/nombre_playlist.txt"]
 ```
 
-1. **Entrada** — Pegas la URL de una playlist de YouTube
-2. **Detección** — `yt-dlp` obtiene el nombre de la playlist y la lista de videos
-3. **Transcripción** — `youtube-transcript-api` descarga los subtítulos de cada video
-4. **Guardado** — Se genera un `.txt` con el nombre de la playlist + fecha, en `transcripciones/`
-5. **Siguiente** — La interfaz queda lista para procesar otra playlist inmediatamente
-
----
-
-## 📋 Dependencias
-
-| Paquete                   | Propósito                          |
-|---------------------------|-------------------------------------|
-| `flask`                   | Servidor web e interfaz             |
-| `yt-dlp`                  | Extracción de datos de YouTube      |
-| `youtube-transcript-api`  | Obtención de transcripciones        |
+1. Pegas la URL de una playlist de YouTube
+2. `yt-dlp` obtiene el nombre de la playlist y la lista de videos
+3. `youtube-transcript-api` descarga los subtítulos de cada video
+4. Se genera un `.txt` con el nombre de la playlist en `transcripciones/`
+5. Queda listo para procesar otra playlist
 
 ---
 
 ## 🤝 Contribuir
 
 1. Haz un **fork** del repositorio
-2. Crea una **branch** para tu feature (`git checkout -b feature/nueva-funcion`)
-3. Haz **commit** de tus cambios (`git commit -m 'Agrega nueva función'`)
-4. Haz **push** a la branch (`git push origin feature/nueva-funcion`)
+2. Crea una **branch** (`git checkout -b feature/nueva-funcion`)
+3. Haz **commit** (`git commit -m 'Agrega nueva función'`)
+4. Haz **push** (`git push origin feature/nueva-funcion`)
 5. Abre un **Pull Request**
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
 
 ---
 
