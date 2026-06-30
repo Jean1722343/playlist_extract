@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import html
+import random
 import re
+import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
@@ -151,11 +153,25 @@ def extract_playlist_videos(playlist_url: str) -> list[PlaylistVideo]:
     return videos
 
 
-def fetch_transcript_lines(video_id: str, preferred_languages: list[str]) -> list[dict[str, Any]]:
-    """Descarga las líneas de transcripción de un video de YouTube."""
+def fetch_transcript_lines(video_id: str, preferred_languages: list[str], retries: int = 3) -> list[dict[str, Any]]:
+    """Descarga las líneas de transcripción de un video de YouTube con reintentos."""
     transcript_api = YouTubeTranscriptApi()
-    transcript = transcript_api.fetch(video_id, languages=preferred_languages)
-    return [asdict(snippet) for snippet in transcript]
+    
+    for attempt in range(retries):
+        try:
+            # Pausa aleatoria para evitar bloqueos por IP (Rate Limiting)
+            delay = random.uniform(2.0, 4.5)
+            time.sleep(delay)
+            
+            transcript = transcript_api.fetch(video_id, languages=preferred_languages)
+            return [asdict(snippet) for snippet in transcript]
+        except Exception as e:
+            if attempt < retries - 1:
+                # Si falla, esperamos más tiempo antes del próximo intento (backoff)
+                time.sleep(random.uniform(5.0, 10.0))
+            else:
+                raise e
+    return []
 
 
 def build_transcript_document(
