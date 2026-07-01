@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import logging
 import random
 import re
 import time
@@ -12,9 +13,25 @@ from typing import Any, Callable, cast
 import yt_dlp
 from youtube_transcript_api import YouTubeTranscriptApi
 
+# Intentar importar soporte de proxy (versiones recientes de la librería)
+try:
+    from youtube_transcript_api.proxies import GenericProxyConfig
+    _HAS_PROXY_SUPPORT = True
+except ImportError:
+    _HAS_PROXY_SUPPORT = False
+
+
+logger = logging.getLogger(__name__)
 
 DEFAULT_OUTPUT_NAME = "transcripciones_playlist.txt"
 TRANSCRIPTS_DIRNAME = "transcripciones"
+
+# Configuración de Rate Limiting (segundos)
+MIN_DELAY_BETWEEN_REQUESTS = 3.0
+MAX_DELAY_BETWEEN_REQUESTS = 6.0
+MIN_RETRY_DELAY = 8.0
+MAX_RETRY_DELAY = 15.0
+MAX_RETRIES = 3
 
 
 @dataclass(frozen=True)
@@ -153,22 +170,73 @@ def extract_playlist_videos(playlist_url: str) -> list[PlaylistVideo]:
     return videos
 
 
-def fetch_transcript_lines(video_id: str, preferred_languages: list[str], retries: int = 3) -> list[dict[str, Any]]:
-    """Descarga las líneas de transcripción de un video de YouTube con reintentos."""
-    transcript_api = YouTubeTranscriptApi()
-    
+def _create_transcript_api() -> YouTubeTranscriptApi:
+    """Crea una instancia de YouTubeTranscriptApi con proxy si está configurado.
+
+    Busca un archivo 'proxy.txt' en el directorio de trabajo actual con el formato:
+        http://user:pass@host:port
+
+    Si el archivo existe y tiene contenido, usa GenericProxyConfig.
+    Si no, crea la instancia sin proxy (usa tu IP directa/VPN del sistema).
+    """
+    proxy_file = Path.cwd() / "proxy.txt"
+
+    if proxy_file.exists() and _HAS_PROXY_SUPPORT:
+        proxy_url = proxy_file.read_text(encoding="utf-8").strip()
+        if proxy_url:
+            logger.info("Usando proxy: %s", proxy_url[:30] + "...")
+            https_url = proxy_url.replace("http://", "https://", 1) if proxy_url.startswith("http://") else proxy_url
+            return YouTubeTranscriptApi(
+                proxy_config=GenericProxyConfig(
+                    http_url=proxy_url,
+                    https_url=https_url,
+                )
+            )
+
+    return YouTubeTranscriptApi()
+
+
+def fetch_transcript_lines(video_id: str, preferred_languages: list[str], retries: int = MAX_RETRIES) -> list[dict[str, Any]]:
+    """Descarga las líneas de transcripción de un video de YouTube con reintentos.
+
+    Incluye pausas aleatorias entre peticiones para evitar bloqueos por IP (Rate Limiting)
+    y reintentos con backoff exponencial si YouTube bloquea temporalmente.
+
+    Args:
+        video_id: ID del video de YouTube.
+        preferred_languages: Lista de idiomas preferidos.
+        retries: Número máximo de reintentos.
+
+    Returns:
+        Lista de diccionarios con las líneas de transcripción.
+
+    Raises:
+        Exception: Si falla después de todos los reintentos.
+    """
+    transcript_api = _create_transcript_api()
+
     for attempt in range(retries):
         try:
-            # Pausa aleatoria para evitar bloqueos por IP (Rate Limiting)
-            delay = random.uniform(2.0, 4.5)
+            # Pausa aleatoria para simular comportamiento humano
+            delay = random.uniform(MIN_DELAY_BETWEEN_REQUESTS, MAX_DELAY_BETWEEN_REQUESTS)
             time.sleep(delay)
-            
+
             transcript = transcript_api.fetch(video_id, languages=preferred_languages)
             return [asdict(snippet) for snippet in transcript]
         except Exception as e:
+            error_msg = str(e).lower()
+            is_ip_block = "blocking" in error_msg or "ipblocked" in error_msg or "requestblocked" in error_msg
+
             if attempt < retries - 1:
-                # Si falla, esperamos más tiempo antes del próximo intento (backoff)
-                time.sleep(random.uniform(5.0, 10.0))
+                if is_ip_block:
+                    # Bloqueo de IP: esperar mucho más
+                    wait = random.uniform(MIN_RETRY_DELAY * 2, MAX_RETRY_DELAY * 2)
+                    logger.warning("IP bloqueada en video %s, reintentando en %.0fs (intento %d/%d)", video_id, wait, attempt + 1, retries)
+                else:
+                    # Otro error: esperar menos
+                    wait = random.uniform(MIN_RETRY_DELAY, MAX_RETRY_DELAY)
+                    logger.warning("Error en video %s, reintentando en %.0fs (intento %d/%d): %s", video_id, wait, attempt + 1, retries, e)
+                time.sleep(wait)
             else:
                 raise e
     return []
@@ -205,6 +273,8 @@ def build_transcript_document(
     lines.append("")
 
     total_videos = len(videos)
+    successful = 0
+    failed = 0
 
     for index, video in enumerate(videos, start=1):
         if progress_callback is not None:
@@ -216,10 +286,19 @@ def build_transcript_document(
         try:
             transcript_lines = fetch_transcript_lines(video.video_id, preferred_languages)
         except Exception as exc:  # noqa: BLE001
-            lines.append(f"Transcripción no disponible: {exc}")
+            # Mensaje de error simplificado para el usuario
+            error_str = str(exc)
+            if "blocking" in error_str.lower() or "ipblocked" in error_str.lower():
+                lines.append("Transcripción no disponible: YouTube bloqueó la IP. Intenta con una VPN o espera unos minutos.")
+            elif "no transcript" in error_str.lower() or "disabled" in error_str.lower():
+                lines.append("Transcripción no disponible: Este video no tiene subtítulos disponibles.")
+            else:
+                lines.append(f"Transcripción no disponible: {exc}")
             lines.append("")
+            failed += 1
             continue
 
+        successful += 1
         for item in transcript_lines:
             timestamp = format_timestamp(float(item.get("start", 0.0)))
             text = normalize_text(str(item.get("text", "")))
@@ -227,6 +306,11 @@ def build_transcript_document(
                 lines.append(f"[{timestamp}] {text}")
 
         lines.append("")
+
+    # Resumen al final del documento
+    lines.append("=" * 40)
+    lines.append(f"RESUMEN: {successful}/{total_videos} videos transcritos exitosamente, {failed} fallidos.")
+    lines.append("")
 
     return "\n".join(lines).rstrip() + "\n"
 
